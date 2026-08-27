@@ -6,9 +6,10 @@ Codex CLI의 기본 기능만으로 구성한 multi-agent 설정입니다. 프�
 
 ### Windows
 
-PowerShell에서 Node.js LTS와 Codex CLI를 설치합니다.
+PowerShell에서 Git, Node.js LTS, Codex CLI를 설치합니다.
 
 ```powershell
+winget install --id Git.Git --exact
 winget install --id OpenJS.NodeJS.LTS --exact
 npm install -g npm@latest
 npm install -g @openai/codex@latest
@@ -16,9 +17,10 @@ npm install -g @openai/codex@latest
 
 ### macOS
 
-[Homebrew](https://brew.sh/)가 설치된 Terminal에서 Node.js와 Codex CLI를 설치합니다.
+[Homebrew](https://brew.sh/)가 설치된 Terminal에서 Git, Node.js, Codex CLI를 설치합니다.
 
 ```sh
+brew install git
 brew install node
 npm install -g npm@latest
 npm install -g @openai/codex@latest
