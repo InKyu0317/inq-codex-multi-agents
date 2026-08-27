@@ -135,6 +135,36 @@ function Get-MergedConfig {
 
     $newline = if ($ExistingContent.Contains("`r`n")) { "`r`n" } else { "`n" }
     $content = (Normalize-Newlines -Content $ExistingContent -Newline "`n")
+    $firstTable = [regex]::Match($content, '(?m)^[ \t]*\[[^\r\n]+\][ \t]*(?:#.*)?$')
+    $rootContent = if ($firstTable.Success) { $content.Substring(0, $firstTable.Index) } else { $content }
+    $tableContent = if ($firstTable.Success) { $content.Substring($firstTable.Index) } else { '' }
+
+    foreach ($setting in @(
+        @{ Name = 'model'; Value = '"gpt-5.6-terra"' },
+        @{ Name = 'model_reasoning_effort'; Value = '"medium"' }
+    )) {
+        $settingLine = "$($setting.Name) = $($setting.Value)"
+        $settingPattern = "(?m)^([ \t]*)$([regex]::Escape($setting.Name))[ \t]*=.*?([ \t]+#.*)?$"
+        $settingMatches = [regex]::Matches($rootContent, $settingPattern)
+
+        if ($settingMatches.Count -gt 1) {
+            throw "config.toml contains duplicate top-level $($setting.Name) keys."
+        }
+
+        if ($settingMatches.Count -eq 1) {
+            $existingSetting = $settingMatches[0]
+            $replacement = $existingSetting.Groups[1].Value + $settingLine + $existingSetting.Groups[2].Value
+            $rootContent = $rootContent.Remove($existingSetting.Index, $existingSetting.Length).Insert($existingSetting.Index, $replacement)
+        }
+        else {
+            if ($rootContent.Length -gt 0 -and -not $rootContent.EndsWith("`n")) {
+                $rootContent += "`n"
+            }
+            $rootContent += "$settingLine`n"
+        }
+    }
+
+    $content = $rootContent + $tableContent
     $sectionPattern = '(?m)^[ \t]*\[agents\][ \t]*(?:#.*)?$'
     $sectionMatches = [regex]::Matches($content, $sectionPattern)
 

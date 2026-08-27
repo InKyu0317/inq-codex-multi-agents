@@ -33,7 +33,7 @@ AGENTS.md
 
 Main Codex is the sole coordinator. It owns requirements, agent selection, task order, architecture decisions, integration, implementation instructions, verification, review follow-up, and the final response.
 
-Only Main Codex may spawn subagents. A subagent must not call, delegate to, or depend on another subagent. Each subagent returns its results to Main Codex, which decides the next action.
+Only Main Codex may spawn subagents. A subagent must not call, delegate work to, communicate directly with, or depend on another subagent. Each subagent returns results only to Main Codex, which decides the next action.
 
 Use only the agents that materially help the current task. Prefer the simplest workflow that solves the task.
 
