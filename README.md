@@ -1,5 +1,7 @@
 # Codex CLI Multi-Agent Configuration
 
+Codex CLI의 기본 기능만으로 구성한 프로젝트 범위 multi-agent 설정입니다. 별도 Python, Node.js, shell orchestration framework를 만들지 않고 `AGENTS.md`, `.codex/agents/`, custom subagent, sandbox, permission, model, reasoning 설정을 사용합니다.
+
 ## 준비 사항
 
 ```code
@@ -7,8 +9,6 @@ winget install --id OpenJS.NodeJS.LTS --exact
 npm install -g npm@latest
 npm install -g @openai/codex@latest
 ```
-
-Codex CLI의 기본 기능만으로 구성한 프로젝트 범위 multi-agent 설정입니다. 별도 Python, Node.js, shell orchestration framework를 만들지 않고 `AGENTS.md`, `.codex/agents/`, custom subagent, sandbox, permission, model, reasoning 설정을 사용합니다.
 
 ## 구성
 
