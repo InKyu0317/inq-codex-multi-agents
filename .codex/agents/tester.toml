@@ -1,7 +1,7 @@
 name = "tester"
 description = "Verification specialist for tests, builds, linting, type checks, failure paths, regressions, and platform-specific behavior."
 model = "gpt-5.6-terra"
-model_reasoning_effort = "high"
+model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 
 developer_instructions = """

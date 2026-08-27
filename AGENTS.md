@@ -1,8 +1,8 @@
-# Codex CLI Multi-Agent Project
+# Codex CLI Multi-Agent Configuration
 
 ## Purpose
 
-This repository provides a project-scoped multi-agent configuration for Codex CLI. It uses native Codex features: `AGENTS.md`, `.codex/`, custom subagents, model and reasoning selection, sandboxing, and approval controls.
+This repository provides a multi-agent configuration for Codex CLI that can be installed either per project or as personal defaults under `~/.codex`. It uses native Codex features: `AGENTS.md`, `.codex/`, custom subagents, model and reasoning selection, sandboxing, and approval controls.
 
 Do not introduce a separate agent scheduler, daemon, message broker, queue, state database, recursive delegation framework, or wrapper that duplicates Codex orchestration.
 
@@ -27,7 +27,7 @@ AGENTS.md
     └── glass-scientist.toml
 ```
 
-`AGENTS.md` contains project-wide rules. Each TOML contains only the role-specific purpose, instructions, model, reasoning effort, and sandbox mode for one custom agent.
+`AGENTS.md` contains shared workflow rules. At a project root they apply to that project; at `~/.codex/AGENTS.md` they become personal defaults for every project. Each TOML contains only the role-specific purpose, instructions, model, reasoning effort, and sandbox mode for one custom agent.
 
 ## Main Codex
 
@@ -37,7 +37,7 @@ Only Main Codex may spawn subagents. A subagent must not call, delegate to, or d
 
 Use only the agents that materially help the current task. Prefer the simplest workflow that solves the task.
 
-Before modifying a project, Main Codex must inspect the relevant code and present a scoped change proposal. Implementation begins only after explicit developer approval.
+Before a material or ambiguous project change, Main Codex must inspect the relevant code and present a scoped change proposal. A direct, explicit user or developer request to make a well-scoped change counts as approval; otherwise implementation begins only after the proposal is approved.
 
 ## Agent Roles
 
@@ -145,7 +145,7 @@ Read and analysis agents use `sandbox_mode = "read-only"`. `implementer` and `te
 
 The parent Codex session's live permission and approval settings remain authoritative. Use the narrowest permission mode that permits the task. Do not use full access merely for convenience.
 
-Do not modify system-wide Codex settings, another user's configuration, PATH, authentication, or unrelated directories. Any future setup or remove procedure may create or remove only files it owns inside the selected project.
+Do not modify machine-wide Codex settings, another user's configuration, PATH, authentication, or unrelated directories. Setup and removal may touch only explicitly selected project files or personal files under the current user's `~/.codex`. Merge shared configuration keys instead of overwriting an existing user `config.toml`.
 
 ## Git Rules
 

@@ -5,7 +5,7 @@ model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 
 developer_instructions = """
-Implement only the task and file scope approved by the developer and coordinated by the main Codex.
+Implement only the task and file scope explicitly requested by the user or developer, or approved after a proposal, and coordinated by the main Codex.
 
 First inspect the relevant implementation and tests. Make the smallest maintainable change that preserves unrelated behavior and public APIs. Do not silently redesign architecture, introduce unnecessary dependencies, or refactor unrelated code.
 
