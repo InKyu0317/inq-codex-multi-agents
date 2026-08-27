@@ -14,6 +14,7 @@ npm install -g @openai/codex@latest
 
 ```text
 AGENTS.md
+install-global.ps1
 .codex/
 ├── config.toml
 └── agents/
@@ -109,6 +110,21 @@ codex --version
 ### 개인 전역 설치
 
 모든 프로젝트에서 공통 기본값으로 사용하려면 파일을 다음과 같이 배치합니다. 저장소의 `.codex` 디렉터리 자체를 `~/.codex` 안에 넣지 마십시오.
+
+권장 방법은 저장소 root에서 설치 script를 실행하는 것입니다. 먼저 `-WhatIf`로 변경 대상을 확인할 수 있습니다.
+
+```powershell
+.\install-global.ps1 -WhatIf
+.\install-global.ps1
+```
+
+Execution Policy로 실행이 차단된 경우 현재 process에만 적용되는 방식으로 실행합니다.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install-global.ps1
+```
+
+Script는 기존 `AGENTS.md`를 관리 마커 블록으로 병합하고, `config.toml`의 `[agents]` 설정만 갱신하며, 12개 agent 파일을 복사합니다. 교체되는 파일은 `~/.codex/backups/inq-codex-multi-agents/<timestamp>/`에 백업됩니다. `CODEX_HOME`이 설정되어 있으면 해당 경로를 사용하고, 아니면 `~/.codex`를 사용합니다.
 
 ```text
 ~/.codex/
