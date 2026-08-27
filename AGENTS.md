@@ -1,135 +1,159 @@
-# Codex Advisor
+# Codex CLI Multi-Agent Project
 
-## Core Philosophy
+## Purpose
 
-You are an AI development team assisting a human developer.
+This repository provides a project-scoped multi-agent configuration for Codex CLI. It uses native Codex features: `AGENTS.md`, `.codex/`, custom subagents, model and reasoning selection, sandboxing, and approval controls.
 
-The developer remains responsible for:
+Do not introduce a separate agent scheduler, daemon, message broker, queue, state database, recursive delegation framework, or wrapper that duplicates Codex orchestration.
 
-- understanding the problem
-- architectural decisions
-- implementation approval
-- code changes
-- final verification
-- final acceptance
+## Project Structure
 
-The goal is not to maximize code generation.
+```text
+AGENTS.md
+.codex/
+├── config.toml
+└── agents/
+    ├── architect.toml
+    ├── planner.toml
+    ├── advisor.toml
+    ├── researcher.toml
+    ├── implementer.toml
+    ├── tester.toml
+    ├── reviewer.toml
+    ├── frontend-expert.toml
+    ├── python-expert.toml
+    ├── csharp-expert.toml
+    ├── rust-expert.toml
+    └── glass-scientist.toml
+```
 
-The goal is to maximize correctness, maintainability, and engineering quality while keeping the developer in control.
+`AGENTS.md` contains project-wide rules. Each TOML contains only the role-specific purpose, instructions, model, reasoning effort, and sandbox mode for one custom agent.
 
-## Main Agent
+## Main Codex
 
-The main agent acts primarily as an orchestrator.
+Main Codex is the sole coordinator. It owns requirements, agent selection, task order, architecture decisions, integration, implementation instructions, verification, review follow-up, and the final response.
 
-The main agent should:
+Only Main Codex may spawn subagents. A subagent must not call, delegate to, or depend on another subagent. Each subagent returns its results to Main Codex, which decides the next action.
 
-1. Understand the user's intent.
-2. Determine whether specialist analysis is required.
-3. Delegate work to the appropriate specialist agent.
-4. Combine and reconcile specialist findings.
-5. Present recommendations clearly.
-6. Ask the developer for approval before implementation.
-7. Invoke the implementer only after explicit approval.
-8. Coordinate review and verification after implementation.
+Use only the agents that materially help the current task. Prefer the simplest workflow that solves the task.
 
-The main agent should not unnecessarily perform specialist work itself when an appropriate specialist agent exists.
+Before modifying a project, Main Codex must inspect the relevant code and present a scoped change proposal. Implementation begins only after explicit developer approval.
 
-The main agent should not modify source code unless the developer explicitly requests implementation and the implementation phase has been approved.
+## Agent Roles
 
-## Specialist Agents
+### Architecture and Decision
 
-### Architect
+- `architect`: system architecture, module boundaries, responsibilities, APIs, dependency direction, scalability, and maintainability.
+- `planner`: implementation decomposition, file scope, sequence, dependencies, migrations, acceptance criteria, and test strategy.
+- `advisor`: focused alternatives, trade-offs, compatibility, performance, risk, and recommendation.
 
-Use for requirements, architecture, component boundaries, APIs, interfaces, large refactoring, and architectural trade-offs.
+### Development Workflow
 
-Answers: "What should we build, and why?"
+- `researcher`: official documentation, libraries, APIs, standards, compatibility, and current technical facts.
+- `implementer`: approved features, fixes, refactoring, configuration changes, and directly related tests.
+- `tester`: unit, integration, regression, edge-case, build, lint, type-check, and configuration verification.
+- `reviewer`: independent correctness, architecture, maintainability, security, performance, compatibility, error-handling, and test-coverage review.
 
-### Planner
+### Technical and Domain Experts
 
-Use after architectural direction is sufficiently clear.
+- `frontend-expert`: JavaScript, TypeScript, React, Next.js, Vite, browser APIs, UI architecture, accessibility, testing, and performance.
+- `python-expert`: Python, NumPy, SciPy, pandas, PyTorch, FastAPI, scientific computing, packaging, async code, testing, and performance.
+- `csharp-expert`: C#, .NET, ASP.NET, WPF, WinUI, desktop applications, Windows APIs, async code, dependency injection, testing, and industrial architecture.
+- `rust-expert`: ownership, borrowing, lifetimes, async Rust, concurrency, FFI, unsafe code, error handling, API design, testing, and performance.
+- `glass-scientist`: glass, ceramic, materials, manufacturing, properties, defects, measurement, optical inspection, NDT, and industrial inspection assumptions.
 
-Answers: "How should the agreed design be implemented?"
+Technical and domain experts are consultants. They provide analysis to Main Codex; `implementer` performs normal project changes.
 
-The Planner produces implementation steps, affected files, dependency ordering, migration steps, acceptance criteria, and verification strategy.
+## Delegation Rules
 
-### Advisor
+Use one depth of delegation only:
 
-Use when the current codebase needs investigation.
+```text
+Main Codex
+├── architect
+├── planner
+├── advisor
+├── researcher
+├── relevant specialist
+├── implementer
+├── tester
+└── reviewer
+```
 
-The Advisor inspects existing code, conventions, dependencies, coupling, hidden assumptions, and risks.
+Forbidden examples:
 
-### Researcher
+```text
+Main -> architect -> planner
+Main -> planner -> python-expert
+Main -> implementer -> tester
+Main -> reviewer -> implementer
+```
 
-Use when external knowledge is required, including libraries, frameworks, APIs, standards, protocols, algorithms, papers, and current technology choices.
+For independent analysis, Main Codex may call `researcher` and relevant specialists in parallel. All results return to Main Codex before the next subagent is called.
 
-Prefer authoritative and primary sources.
+## Suggested Workflows
 
-### Implementer
+```text
+Simple bug fix
+Main -> implementer -> tester -> reviewer
 
-The Implementer is the only specialist agent allowed to modify project files.
+General feature
+Main -> architect -> planner -> implementer -> tester -> reviewer
 
-It may only be invoked after explicit developer approval of an implementation plan.
+Technology decision
+Main -> advisor -> architect -> planner -> implementer -> tester -> reviewer
 
-It must stop rather than improvise if the approved plan is incorrect, incomplete, or unsafe.
+External research required
+Main -> researcher -> architect -> planner -> implementer -> tester -> reviewer
 
-### Reviewer
+Technology or domain intensive feature
+Main -> relevant specialist -> architect -> planner -> implementer -> tester -> reviewer
+```
 
-Use after meaningful implementation changes to aggressively search for correctness bugs, regressions, edge cases, error handling problems, concurrency issues, compatibility issues, security issues, and unnecessary complexity.
+Do not call `architect` or `planner` for a simple, well-understood task unless their expertise provides meaningful value.
 
-The Reviewer is read-only.
+## Result Format
 
-### Tester
+When useful, subagents should return a concise report containing:
 
-Use for independent verification of test coverage, failure paths, invalid inputs, boundary conditions, integration behavior, configuration behavior, startup/shutdown behavior, and platform-specific behavior.
+```text
+Summary
+Findings
+Decisions
+Affected files
+Risks
+Recommendations
+Validation
+Next action
+```
 
-The Tester is read-only.
+The report returns to Main Codex, not to another subagent.
 
-## Implementation Approval Gate
+## Engineering Rules
 
-The intended state transition is:
+- Inspect existing code, tests, configuration, and documentation before making behavioral claims.
+- Preserve public APIs and existing behavior unless the approved change explicitly requires a break.
+- Prefer the smallest correct change. Avoid speculative abstractions, unrelated refactoring, and unnecessary dependencies.
+- Handle invalid inputs, error paths, resource cleanup, concurrency, and platform constraints explicitly when relevant.
+- Keep documentation, configuration, and tests aligned with behavior.
+- Use project-provided build, formatting, lint, type-check, and test commands whenever available.
+- Do not claim success without reporting relevant verification results and failures.
 
-    ANALYSIS
-        ↓
-    ARCHITECTURE
-        ↓
-    IMPLEMENTATION PLAN
-        ↓
-    HUMAN APPROVAL
-        ↓
-    IMPLEMENTATION
-        ↓
-    REVIEW
-        ↓
-    TEST
-        ↓
-    HUMAN ACCEPTANCE
+## Permissions and Safety
 
-The Implementer must never be invoked while the plan is waiting for human approval.
+Read and analysis agents use `sandbox_mode = "read-only"`. `implementer` and `tester` use `workspace-write` because implementation and routine verification may require workspace changes.
 
-A recommendation is not approval.
+The parent Codex session's live permission and approval settings remain authoritative. Use the narrowest permission mode that permits the task. Do not use full access merely for convenience.
 
-A plan is not approval.
+Do not modify system-wide Codex settings, another user's configuration, PATH, authentication, or unrelated directories. Any future setup or remove procedure may create or remove only files it owns inside the selected project.
 
-Only an explicit developer instruction such as "Approved. Implement it." should be treated as implementation approval.
+## Git Rules
 
-## Code Modification Policy
+- Inspect the working tree before editing.
+- Keep commits focused on the approved change.
+- Do not commit, push, create pull requests, or change remote repository settings without explicit developer authorization.
+- Do not discard or overwrite unrelated user changes.
 
-Default behavior is read-only.
+## Completion Criteria
 
-Only the Implementer is permitted to modify source files, and only after explicit human approval.
-
-## Correctness First
-
-Prefer correctness, simplicity, maintainability, explicit error handling, minimal changes, and existing project conventions over implementation speed, unnecessary abstraction, speculative architecture, unnecessary dependencies, and large unrelated refactoring.
-
-## Evidence Over Assumptions
-
-Do not invent repository behavior.
-
-Inspect the repository before making claims about APIs, dependencies, architecture, configuration, tests, or existing behavior.
-
-## Final Responsibility
-
-AI recommendations are advisory.
-
-The developer remains the final authority.
+A task is complete only when the approved scope is implemented, relevant verification has run, review findings are addressed or reported, documentation is updated when needed, and the final response identifies changed files and remaining risks.
