@@ -279,8 +279,8 @@ prepare_merged_root_config() {
 
     awk '
         function emit_missing() {
-            if (!model_written) print "model = \"gpt-5.6-terra\""
-            if (!effort_written) print "model_reasoning_effort = \"medium\""
+            if (!model_written) print "model = \"gpt-5.6-sol\""
+            if (!effort_written) print "model_reasoning_effort = \"high\""
         }
         /^[[:blank:]]*\[/ {
             if (!in_table) {
@@ -291,12 +291,12 @@ prepare_merged_root_config() {
             next
         }
         !in_table && /^[[:blank:]]*model[[:blank:]]*=/ {
-            print "model = \"gpt-5.6-terra\""
+            print "model = \"gpt-5.6-sol\""
             model_written = 1
             next
         }
         !in_table && /^[[:blank:]]*model_reasoning_effort[[:blank:]]*=/ {
-            print "model_reasoning_effort = \"medium\""
+            print "model_reasoning_effort = \"high\""
             effort_written = 1
             next
         }

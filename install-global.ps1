@@ -140,8 +140,8 @@ function Get-MergedConfig {
     $tableContent = if ($firstTable.Success) { $content.Substring($firstTable.Index) } else { '' }
 
     foreach ($setting in @(
-        @{ Name = 'model'; Value = '"gpt-5.6-terra"' },
-        @{ Name = 'model_reasoning_effort'; Value = '"medium"' }
+        @{ Name = 'model'; Value = '"gpt-5.6-sol"' },
+        @{ Name = 'model_reasoning_effort'; Value = '"high"' }
     )) {
         $settingLine = "$($setting.Name) = $($setting.Value)"
         $settingPattern = "(?m)^([ \t]*)$([regex]::Escape($setting.Name))[ \t]*=.*?([ \t]+#.*)?$"
