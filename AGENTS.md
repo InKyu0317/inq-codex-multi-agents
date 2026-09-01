@@ -1,68 +1,30 @@
-# Codex CLI Multi-Agent Configuration
+# Codex Multi-Agent Configuration
 
 ## Purpose
 
-This repository provides a multi-agent configuration for Codex CLI that can be installed either per project or as personal defaults under `~/.codex`. It uses native Codex features: `AGENTS.md`, `.codex/`, custom subagents, model and reasoning selection, sandboxing, and approval controls.
-
-Do not introduce a separate agent scheduler, daemon, message broker, queue, state database, recursive delegation framework, or wrapper that duplicates Codex orchestration.
-
-## Project Structure
-
-```text
-AGENTS.md
-.codex/
-├── config.toml
-└── agents/
-    ├── architect.toml
-    ├── planner.toml
-    ├── advisor.toml
-    ├── researcher.toml
-    ├── implementer.toml
-    ├── tester.toml
-    ├── reviewer.toml
-    ├── frontend-expert.toml
-    ├── python-expert.toml
-    ├── csharp-expert.toml
-    ├── rust-expert.toml
-    └── glass-scientist.toml
-```
-
-`AGENTS.md` contains shared workflow rules. At a project root they apply to that project; at `~/.codex/AGENTS.md` they become personal defaults for every project. Each TOML contains only the role-specific purpose, instructions, model, reasoning effort, and sandbox mode for one custom agent.
+Use Codex's native custom agents for a small programming lifecycle team plus cost-efficient general-purpose Luna workers. Do not introduce a separate scheduler, daemon, queue, state database, recursive delegation framework, or orchestration wrapper.
 
 ## Main Codex
 
 Main Codex is the sole coordinator. It owns requirements, agent selection, task order, architecture decisions, integration, implementation instructions, verification, review follow-up, and the final response.
 
-Only Main Codex may spawn subagents. A subagent must not call, delegate work to, communicate directly with, or depend on another subagent. Each subagent returns results only to Main Codex, which decides the next action.
+Only Main Codex may spawn subagents. A subagent must not delegate work to, communicate directly with, or depend on another subagent. Each subagent returns results only to Main Codex.
 
-Use only the agents that materially help the current task. Prefer the simplest workflow that solves the task.
-
-Before a material or ambiguous project change, Main Codex must inspect the relevant code and present a scoped change proposal. A direct, explicit user or developer request to make a well-scoped change counts as approval; otherwise implementation begins only after the proposal is approved.
+Use only agents that materially help the current task. Prefer the simplest workflow that solves the task. Before a material or ambiguous project change, inspect the relevant code and present a scoped proposal. A direct, explicit user or developer request for a well-scoped change counts as approval.
 
 ## Agent Roles
 
-### Architecture and Decision
+- `architect` (read-only): system structure, module boundaries, APIs, dependency direction, scalability, and maintainability.
+- `planner` (read-only): implementation order, affected files, task decomposition, dependencies, migrations, acceptance criteria, and verification plan.
+- `implementer` (workspace-write): approved features, fixes, refactoring, configuration changes, and directly related tests.
+- `tester` (workspace-write): tests, builds, linting, type checks, regression coverage, failure paths, and platform checks.
+- `reviewer` (read-only): independent correctness, security, maintainability, compatibility, error-handling, performance, and coverage review.
+- `material-scientist` (read-only): glass, ceramic, and battery materials; processing, properties, degradation, defects, metrology, inspection, NDT, and safety assumptions.
+- `luna-worker-light` (read-only): fast searches, code mapping, summaries, inventory, classification, and other narrow repeatable analysis.
+- `luna-worker-medium` (workspace-write): bounded routine edits, test execution, mechanical changes, and small refactors.
+- `luna-worker-high` (workspace-write): larger but still clearly bounded independent implementation, diagnosis, or verification work.
 
-- `architect`: system architecture, module boundaries, responsibilities, APIs, dependency direction, scalability, and maintainability.
-- `planner`: implementation decomposition, file scope, sequence, dependencies, migrations, acceptance criteria, and test strategy.
-- `advisor`: focused alternatives, trade-offs, compatibility, performance, risk, and recommendation.
-
-### Development Workflow
-
-- `researcher`: official documentation, libraries, APIs, standards, compatibility, and current technical facts.
-- `implementer`: approved features, fixes, refactoring, configuration changes, and directly related tests.
-- `tester`: unit, integration, regression, edge-case, build, lint, type-check, and configuration verification.
-- `reviewer`: independent correctness, architecture, maintainability, security, performance, compatibility, error-handling, and test-coverage review.
-
-### Technical and Domain Experts
-
-- `frontend-expert`: JavaScript, TypeScript, React, Next.js, Vite, browser APIs, UI architecture, accessibility, testing, and performance.
-- `python-expert`: Python, NumPy, SciPy, pandas, PyTorch, FastAPI, scientific computing, packaging, async code, testing, and performance.
-- `csharp-expert`: C#, .NET, ASP.NET, WPF, WinUI, desktop applications, Windows APIs, async code, dependency injection, testing, and industrial architecture.
-- `rust-expert`: ownership, borrowing, lifetimes, async Rust, concurrency, FFI, unsafe code, error handling, API design, testing, and performance.
-- `glass-scientist`: glass, ceramic, materials, manufacturing, properties, defects, measurement, optical inspection, NDT, and industrial inspection assumptions.
-
-Technical and domain experts are consultants. They provide analysis to Main Codex; `implementer` performs normal project changes.
+Technical and domain specialists are consultants. Main Codex decides whether their findings should become implementation instructions.
 
 ## Delegation Rules
 
@@ -72,24 +34,21 @@ Use one depth of delegation only:
 Main Codex
 ├── architect
 ├── planner
-├── advisor
-├── researcher
-├── relevant specialist
 ├── implementer
 ├── tester
-└── reviewer
+├── reviewer
+├── material-scientist
+└── luna-worker-{light,medium,high}
 ```
 
-Forbidden examples:
+Use Luna workers by task cost and complexity:
 
-```text
-Main -> architect -> planner
-Main -> planner -> python-expert
-Main -> implementer -> tester
-Main -> reviewer -> implementer
-```
+- Light for read-only, clear, repetitive work.
+- Medium for routine bounded changes and verification.
+- High for harder independent work that remains well scoped.
+- Use the dedicated lifecycle agent when role separation, stronger judgment, or an independent review matters more than cost.
 
-For independent analysis, Main Codex may call `researcher` and relevant specialists in parallel. All results return to Main Codex before the next subagent is called.
+Avoid parallel write-heavy work when files overlap. Main Codex must assign explicit file ownership if more than one write-capable agent runs concurrently.
 
 ## Suggested Workflows
 
@@ -100,58 +59,42 @@ Main -> implementer -> tester -> reviewer
 General feature
 Main -> architect -> planner -> implementer -> tester -> reviewer
 
-Technology decision
-Main -> advisor -> architect -> planner -> implementer -> tester -> reviewer
+Materials-intensive feature
+Main -> material-scientist -> architect -> planner -> implementer -> tester -> reviewer
 
-External research required
-Main -> researcher -> architect -> planner -> implementer -> tester -> reviewer
-
-Technology or domain intensive feature
-Main -> relevant specialist -> architect -> planner -> implementer -> tester -> reviewer
+Routine support work
+Main -> appropriate luna-worker tier
 ```
 
-Do not call `architect` or `planner` for a simple, well-understood task unless their expertise provides meaningful value.
+Do not call `architect` or `planner` for a simple, well-understood task unless their expertise materially improves the result.
 
 ## Result Format
 
-When useful, subagents should return a concise report containing:
-
-```text
-Summary
-Findings
-Decisions
-Affected files
-Risks
-Recommendations
-Validation
-Next action
-```
-
-The report returns to Main Codex, not to another subagent.
+When useful, return a concise report containing Summary, Findings, Decisions, Affected files, Risks, Recommendations, Validation, and Next action. Return it to Main Codex only.
 
 ## Engineering Rules
 
 - Inspect existing code, tests, configuration, and documentation before making behavioral claims.
-- Preserve public APIs and existing behavior unless the approved change explicitly requires a break.
-- Prefer the smallest correct change. Avoid speculative abstractions, unrelated refactoring, and unnecessary dependencies.
-- Handle invalid inputs, error paths, resource cleanup, concurrency, and platform constraints explicitly when relevant.
+- Preserve public APIs and existing behavior unless the approved change requires a break.
+- Prefer the smallest correct change; avoid unrelated refactoring and unnecessary dependencies.
+- Handle invalid inputs, error paths, cleanup, concurrency, and platform constraints when relevant.
 - Keep documentation, configuration, and tests aligned with behavior.
-- Use project-provided build, formatting, lint, type-check, and test commands whenever available.
+- Use project-provided build, formatting, lint, type-check, and test commands.
 - Do not claim success without reporting relevant verification results and failures.
 
 ## Permissions and Safety
 
-Read and analysis agents use `sandbox_mode = "read-only"`. `implementer` and `tester` use `workspace-write` because implementation and routine verification may require workspace changes.
+Read and analysis agents default to `sandbox_mode = "read-only"`. `implementer`, `tester`, `luna-worker-medium`, and `luna-worker-high` default to `workspace-write`.
 
-The parent Codex session's live permission and approval settings remain authoritative. Use the narrowest permission mode that permits the task. Do not use full access merely for convenience.
+The parent Codex session's live permission and approval settings remain authoritative and can override agent-file defaults. Use the narrowest permission mode that permits the task. Do not use full access merely for convenience.
 
-Do not modify machine-wide Codex settings, another user's configuration, PATH, authentication, or unrelated directories. Setup and removal may touch only explicitly selected project files or personal files under the current user's `~/.codex`. Merge shared configuration keys instead of overwriting an existing user `config.toml`.
+Do not modify machine-wide Codex settings, another user's configuration, PATH, authentication, or unrelated directories. Setup and removal may touch only explicitly selected project files or personal files under the current user's `~/.codex`. Merge shared configuration keys instead of overwriting unrelated `config.toml` settings.
 
 ## Git Rules
 
 - Inspect the working tree before editing.
 - Keep commits focused on the approved change.
-- Do not commit, push, create pull requests, or change remote repository settings without explicit developer authorization.
+- Do not commit, push, create pull requests, or change remotes without explicit authorization.
 - Do not discard or overwrite unrelated user changes.
 
 ## Completion Criteria

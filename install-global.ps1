@@ -140,7 +140,7 @@ function Get-MergedConfig {
     $tableContent = if ($firstTable.Success) { $content.Substring($firstTable.Index) } else { '' }
 
     foreach ($setting in @(
-        @{ Name = 'model'; Value = '"gpt-5.6-sol"' },
+        @{ Name = 'model'; Value = '"gpt-5.6-terra"' },
         @{ Name = 'model_reasoning_effort'; Value = '"high"' }
     )) {
         $settingLine = "$($setting.Name) = $($setting.Value)"
@@ -172,39 +172,48 @@ function Get-MergedConfig {
         throw 'config.toml contains more than one [agents] table.'
     }
 
-    $settingLine = "max_concurrent_threads_per_session = $ThreadCount"
+    $agentSettings = @(
+        @{ Name = 'max_concurrent_threads_per_session'; Value = "$ThreadCount" },
+        @{ Name = 'default_subagent_model'; Value = '"gpt-5.6-luna"' },
+        @{ Name = 'default_subagent_reasoning_effort'; Value = '"medium"' }
+    )
 
     if ($sectionMatches.Count -eq 0) {
         $content = $content.TrimEnd()
         if ($content.Length -gt 0) {
             $content += "`n`n"
         }
-        $content += "[agents]`n$settingLine`n"
+        $content += "[agents]`n"
+        foreach ($setting in $agentSettings) {
+            $content += "$($setting.Name) = $($setting.Value)`n"
+        }
         return Normalize-Newlines -Content $content -Newline $newline
     }
 
-    $section = $sectionMatches[0]
-    $sectionBodyStart = $section.Index + $section.Length
-    $remainingContent = $content.Substring($sectionBodyStart)
-    $nextSection = [regex]::Match($remainingContent, '(?m)^[ \t]*\[[^\r\n]+\][ \t]*(?:#.*)?$')
-    $sectionBodyEnd = if ($nextSection.Success) { $sectionBodyStart + $nextSection.Index } else { $content.Length }
-    $sectionBody = $content.Substring($sectionBodyStart, $sectionBodyEnd - $sectionBodyStart)
-    $settingPattern = '(?m)^([ \t]*)max_concurrent_threads_per_session[ \t]*=.*?([ \t]+#.*)?$'
-    $settingMatches = [regex]::Matches($sectionBody, $settingPattern)
+    foreach ($agentSetting in $agentSettings) {
+        $section = [regex]::Match($content, $sectionPattern)
+        $sectionBodyStart = $section.Index + $section.Length
+        $remainingContent = $content.Substring($sectionBodyStart)
+        $nextSection = [regex]::Match($remainingContent, '(?m)^[ \t]*\[[^\r\n]+\][ \t]*(?:#.*)?$')
+        $sectionBodyEnd = if ($nextSection.Success) { $sectionBodyStart + $nextSection.Index } else { $content.Length }
+        $sectionBody = $content.Substring($sectionBodyStart, $sectionBodyEnd - $sectionBodyStart)
+        $settingLine = "$($agentSetting.Name) = $($agentSetting.Value)"
+        $settingPattern = "(?m)^([ \t]*)$([regex]::Escape($agentSetting.Name))[ \t]*=.*?([ \t]+#.*)?$"
+        $settingMatches = [regex]::Matches($sectionBody, $settingPattern)
 
-    if ($settingMatches.Count -gt 1) {
-        throw 'The [agents] table contains duplicate max_concurrent_threads_per_session keys.'
-    }
+        if ($settingMatches.Count -gt 1) {
+            throw "The [agents] table contains duplicate $($agentSetting.Name) keys."
+        }
 
-    if ($settingMatches.Count -eq 1) {
-        $setting = $settingMatches[0]
-        $comment = $setting.Groups[2].Value
-        $replacement = $setting.Groups[1].Value + $settingLine + $comment
-        $absoluteSettingIndex = $sectionBodyStart + $setting.Index
-        $content = $content.Remove($absoluteSettingIndex, $setting.Length).Insert($absoluteSettingIndex, $replacement)
-    }
-    else {
-        $content = $content.Insert($sectionBodyStart, "`n$settingLine")
+        if ($settingMatches.Count -eq 1) {
+            $setting = $settingMatches[0]
+            $replacement = $setting.Groups[1].Value + $settingLine + $setting.Groups[2].Value
+            $absoluteSettingIndex = $sectionBodyStart + $setting.Index
+            $content = $content.Remove($absoluteSettingIndex, $setting.Length).Insert($absoluteSettingIndex, $replacement)
+        }
+        else {
+            $content = $content.Insert($sectionBodyStart, "`n$settingLine")
+        }
     }
 
     Normalize-Newlines -Content $content -Newline $newline
@@ -275,6 +284,26 @@ foreach ($sourceAgent in $sourceAgentFiles) {
             }
             Copy-Item -LiteralPath $sourceAgent.FullName -Destination $targetAgent -Force
             $changedFiles.Add($targetAgent)
+        }
+    }
+}
+
+foreach ($retiredAgentName in @(
+    'advisor.toml',
+    'researcher.toml',
+    'frontend-expert.toml',
+    'python-expert.toml',
+    'csharp-expert.toml',
+    'rust-expert.toml',
+    'glass-scientist.toml'
+)) {
+    $retiredAgent = Join-Path $targetAgentsDirectory $retiredAgentName
+    if (Test-Path -LiteralPath $retiredAgent -PathType Leaf) {
+        $plannedFiles.Add($retiredAgent)
+        if ($PSCmdlet.ShouldProcess($retiredAgent, 'Retire legacy Codex agent')) {
+            Backup-ExistingFile -Path $retiredAgent -RelativePath (Join-Path 'agents' $retiredAgentName)
+            Remove-Item -LiteralPath $retiredAgent -Force
+            $changedFiles.Add($retiredAgent)
         }
     }
 }

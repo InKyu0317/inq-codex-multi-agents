@@ -279,7 +279,7 @@ prepare_merged_root_config() {
 
     awk '
         function emit_missing() {
-            if (!model_written) print "model = \"gpt-5.6-sol\""
+            if (!model_written) print "model = \"gpt-5.6-terra\""
             if (!effort_written) print "model_reasoning_effort = \"high\""
         }
         /^[[:blank:]]*\[/ {
@@ -291,7 +291,7 @@ prepare_merged_root_config() {
             next
         }
         !in_table && /^[[:blank:]]*model[[:blank:]]*=/ {
-            print "model = \"gpt-5.6-sol\""
+            print "model = \"gpt-5.6-terra\""
             model_written = 1
             next
         }
@@ -310,7 +310,9 @@ prepare_merged_root_config() {
 prepare_merged_config() {
     existing_file=$1
     output_file=$2
-    setting_line="max_concurrent_threads_per_session = $MAX_CONCURRENT_THREADS"
+    thread_setting="max_concurrent_threads_per_session = $MAX_CONCURRENT_THREADS"
+    model_setting='default_subagent_model = "gpt-5.6-luna"'
+    effort_setting='default_subagent_reasoning_effort = "medium"'
 
     config_counts=$(awk '
         /^[[:blank:]]*\[agents\][[:blank:]]*(#.*)?$/ {
@@ -319,18 +321,24 @@ prepare_merged_config() {
             next
         }
         /^[[:blank:]]*\[/ { in_agents = 0 }
-        in_agents && /^[[:blank:]]*max_concurrent_threads_per_session[[:blank:]]*=/ { key_count++ }
-        END { print section_count + 0, key_count + 0 }
+        in_agents && /^[[:blank:]]*max_concurrent_threads_per_session[[:blank:]]*=/ { thread_count++ }
+        in_agents && /^[[:blank:]]*default_subagent_model[[:blank:]]*=/ { model_count++ }
+        in_agents && /^[[:blank:]]*default_subagent_reasoning_effort[[:blank:]]*=/ { effort_count++ }
+        END { print section_count + 0, thread_count + 0, model_count + 0, effort_count + 0 }
     ' "$existing_file")
     set -- $config_counts
     section_count=$1
-    key_count=$2
+    thread_count=$2
+    model_count=$3
+    effort_count=$4
 
     [ "$section_count" -le 1 ] || fail 'config.toml contains more than one [agents] table.'
-    [ "$key_count" -le 1 ] || fail 'The [agents] table contains duplicate max_concurrent_threads_per_session keys.'
+    [ "$thread_count" -le 1 ] || fail 'The [agents] table contains duplicate max_concurrent_threads_per_session keys.'
+    [ "$model_count" -le 1 ] || fail 'The [agents] table contains duplicate default_subagent_model keys.'
+    [ "$effort_count" -le 1 ] || fail 'The [agents] table contains duplicate default_subagent_reasoning_effort keys.'
 
     if [ "$section_count" -eq 0 ]; then
-        awk -v setting="$setting_line" '
+        awk -v thread_setting="$thread_setting" -v model_setting="$model_setting" -v effort_setting="$effort_setting" '
             { lines[NR] = $0 }
             END {
                 last = NR
@@ -338,17 +346,21 @@ prepare_merged_config() {
                 for (i = 1; i <= last; i++) print lines[i]
                 if (last > 0) print ""
                 print "[agents]"
-                print setting
+                print thread_setting
+                print model_setting
+                print effort_setting
             }
         ' "$existing_file" > "$output_file"
         return
     fi
 
-    awk -v setting="$setting_line" -v key_count="$key_count" '
+    awk -v thread_setting="$thread_setting" -v model_setting="$model_setting" -v effort_setting="$effort_setting" -v thread_count="$thread_count" -v model_count="$model_count" -v effort_count="$effort_count" '
         /^[[:blank:]]*\[agents\][[:blank:]]*(#.*)?$/ {
             print
             in_agents = 1
-            if (key_count == 0) print setting
+            if (thread_count == 0) print thread_setting
+            if (model_count == 0) print model_setting
+            if (effort_count == 0) print effort_setting
             next
         }
         in_agents && /^[[:blank:]]*max_concurrent_threads_per_session[[:blank:]]*=/ {
@@ -357,7 +369,25 @@ prepare_merged_config() {
             sub(/[^[:blank:]].*$/, "", indent)
             comment = ""
             if (match(line, /[[:blank:]]+#.*/)) comment = substr(line, RSTART)
-            print indent setting comment
+            print indent thread_setting comment
+            next
+        }
+        in_agents && /^[[:blank:]]*default_subagent_model[[:blank:]]*=/ {
+            line = $0
+            indent = line
+            sub(/[^[:blank:]].*$/, "", indent)
+            comment = ""
+            if (match(line, /[[:blank:]]+#.*/)) comment = substr(line, RSTART)
+            print indent model_setting comment
+            next
+        }
+        in_agents && /^[[:blank:]]*default_subagent_reasoning_effort[[:blank:]]*=/ {
+            line = $0
+            indent = line
+            sub(/[^[:blank:]].*$/, "", indent)
+            comment = ""
+            if (match(line, /[[:blank:]]+#.*/)) comment = substr(line, RSTART)
+            print indent effort_setting comment
             next
         }
         /^[[:blank:]]*\[/ { in_agents = 0 }
@@ -417,6 +447,20 @@ for source_agent in "$source_agents_directory"/*.toml; do
     [ -f "$source_agent" ] || continue
     agent_name=${source_agent##*/}
     install_file "$source_agent" "$target_agents_directory/$agent_name" "agents/$agent_name"
+done
+
+for retired_agent_name in advisor.toml researcher.toml frontend-expert.toml python-expert.toml csharp-expert.toml rust-expert.toml glass-scientist.toml; do
+    retired_agent=$target_agents_directory/$retired_agent_name
+    [ -f "$retired_agent" ] || continue
+    planned_files=$((planned_files + 1))
+    if [ "$WHAT_IF" = true ]; then
+        printf 'Would retire: %s\n' "$retired_agent"
+        continue
+    fi
+    backup_existing_file "$retired_agent" "agents/$retired_agent_name"
+    rm -f "$retired_agent"
+    changed_files=$((changed_files + 1))
+    printf 'Retired: %s\n' "$retired_agent"
 done
 
 printf 'Codex home: %s\n' "$target_root"
