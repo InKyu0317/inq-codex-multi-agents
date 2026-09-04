@@ -311,7 +311,7 @@ prepare_merged_config() {
     existing_file=$1
     output_file=$2
     thread_setting="max_concurrent_threads_per_session = $MAX_CONCURRENT_THREADS"
-    model_setting='default_subagent_model = "gpt-5.6-luna"'
+    model_setting='default_subagent_model = "gpt-5.6-terra"'
     effort_setting='default_subagent_reasoning_effort = "medium"'
 
     config_counts=$(awk '
@@ -449,7 +449,7 @@ for source_agent in "$source_agents_directory"/*.toml; do
     install_file "$source_agent" "$target_agents_directory/$agent_name" "agents/$agent_name"
 done
 
-for retired_agent_name in advisor.toml researcher.toml frontend-expert.toml python-expert.toml csharp-expert.toml rust-expert.toml glass-scientist.toml; do
+for retired_agent_name in advisor.toml researcher.toml frontend-expert.toml python-expert.toml csharp-expert.toml rust-expert.toml glass-scientist.toml luna-worker-light.toml luna-worker-medium.toml luna-worker-high.toml material-scientist.toml; do
     retired_agent=$target_agents_directory/$retired_agent_name
     [ -f "$retired_agent" ] || continue
     planned_files=$((planned_files + 1))

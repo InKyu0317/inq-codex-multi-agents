@@ -174,7 +174,7 @@ function Get-MergedConfig {
 
     $agentSettings = @(
         @{ Name = 'max_concurrent_threads_per_session'; Value = "$ThreadCount" },
-        @{ Name = 'default_subagent_model'; Value = '"gpt-5.6-luna"' },
+        @{ Name = 'default_subagent_model'; Value = '"gpt-5.6-terra"' },
         @{ Name = 'default_subagent_reasoning_effort'; Value = '"medium"' }
     )
 
@@ -295,7 +295,11 @@ foreach ($retiredAgentName in @(
     'python-expert.toml',
     'csharp-expert.toml',
     'rust-expert.toml',
-    'glass-scientist.toml'
+    'glass-scientist.toml',
+    'luna-worker-light.toml',
+    'luna-worker-medium.toml',
+    'luna-worker-high.toml',
+    'material-scientist.toml'
 )) {
     $retiredAgent = Join-Path $targetAgentsDirectory $retiredAgentName
     if (Test-Path -LiteralPath $retiredAgent -PathType Leaf) {

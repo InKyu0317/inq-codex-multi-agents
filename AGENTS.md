@@ -1,102 +1,42 @@
-# Codex Multi-Agent Configuration
+# Codex Development Workflow
 
-## Purpose
+## Core rule
 
-Use Codex's native custom agents for a small programming lifecycle team plus cost-efficient general-purpose Luna workers. Do not introduce a separate scheduler, daemon, queue, state database, recursive delegation framework, or orchestration wrapper.
+Use [`.ai/workflow.md`](.ai/workflow.md) as the source of truth for the development process. Select `FAST`, `STANDARD`, or `HIGH-RISK` before modifying source files.
 
-## Main Codex
+- `FAST` work needs no work package.
+- `STANDARD` and `HIGH-RISK` work require `.ai/work/<work-slug>/` and its required artifacts.
+- For `HIGH-RISK` work, do not modify production source files until the user explicitly approves the completed `spec.md`, `design.md`, `plan.md`, and `tasks.md`.
+- Implement only approved work from `tasks.md`, and update its task status as work progresses.
 
-Main Codex is the sole coordinator. It owns requirements, agent selection, task order, architecture decisions, integration, implementation instructions, verification, review follow-up, and the final response.
+## Coordination
 
-Only Main Codex may spawn subagents. A subagent must not delegate work to, communicate directly with, or depend on another subagent. Each subagent returns results only to Main Codex.
+Main Codex is the sole coordinator. It selects the workflow path, delegates only when useful, owns artifact creation, integrates results, and gives the final response.
 
-Use only agents that materially help the current task. Prefer the simplest workflow that solves the task. Before a material or ambiguous project change, inspect the relevant code and present a scoped proposal. A direct, explicit user or developer request for a well-scoped change counts as approval.
+Only Main Codex may spawn subagents. A subagent must not delegate to or directly communicate with another subagent; it returns results only to Main Codex.
 
-## Agent Roles
+Do not run write-capable agents in parallel when their file scopes overlap. Keep reviewer independent from implementer whenever a review is required.
 
-- `architect` (read-only): system structure, module boundaries, APIs, dependency direction, scalability, and maintainability.
-- `planner` (read-only): implementation order, affected files, task decomposition, dependencies, migrations, acceptance criteria, and verification plan.
-- `implementer` (workspace-write): approved features, fixes, refactoring, configuration changes, and directly related tests.
-- `tester` (workspace-write): tests, builds, linting, type checks, regression coverage, failure paths, and platform checks.
-- `reviewer` (read-only): independent correctness, security, maintainability, compatibility, error-handling, performance, and coverage review.
-- `material-scientist` (read-only): glass, ceramic, and battery materials; processing, properties, degradation, defects, metrology, inspection, NDT, and safety assumptions.
-- `luna-worker-light` (read-only): fast searches, code mapping, summaries, inventory, classification, and other narrow repeatable analysis.
-- `luna-worker-medium` (workspace-write): bounded routine edits, test execution, mechanical changes, and small refactors.
-- `luna-worker-high` (workspace-write): larger but still clearly bounded independent implementation, diagnosis, or verification work.
+## Lifecycle agents
 
-Technical and domain specialists are consultants. Main Codex decides whether their findings should become implementation instructions.
+- `architect` — read-only specification, design, boundaries, interfaces, risks, and compatibility.
+- `planner` — read-only implementation sequence, file scope, task breakdown, migration, rollback, and validation plan.
+- `implementer` — approved implementation and directly related tests.
+- `tester` — independent tests, build, lint, type check, regression, and platform verification.
+- `reviewer` — read-only independent review against the request, artifacts, implementation, and tests.
 
-## Delegation Rules
+Read-only agents provide artifact content to Main Codex; Main Codex records it under `.ai/work/<work-slug>/`.
 
-Use one depth of delegation only:
+## Engineering and safety
 
-```text
-Main Codex
-├── architect
-├── planner
-├── implementer
-├── tester
-├── reviewer
-├── material-scientist
-└── luna-worker-{light,medium,high}
-```
+- Inspect relevant code, tests, configuration, and the working tree before making claims or changes.
+- Prefer the smallest correct change. Preserve public behavior unless the approved change requires otherwise.
+- Use project-provided validation commands and report failures honestly.
+- Do not create a scheduler, daemon, queue, state database, workflow engine, automatic provider failover, or other orchestration framework.
+- Do not store API keys in the repository. Material-science expertise is supplied by separately installed personal Skills, not by this repository.
 
-Use Luna workers by task cost and complexity:
-
-- Light for read-only, clear, repetitive work.
-- Medium for routine bounded changes and verification.
-- High for harder independent work that remains well scoped.
-- Use the dedicated lifecycle agent when role separation, stronger judgment, or an independent review matters more than cost.
-
-Avoid parallel write-heavy work when files overlap. Main Codex must assign explicit file ownership if more than one write-capable agent runs concurrently.
-
-## Suggested Workflows
-
-```text
-Simple bug fix
-Main -> implementer -> tester -> reviewer
-
-General feature
-Main -> architect -> planner -> implementer -> tester -> reviewer
-
-Materials-intensive feature
-Main -> material-scientist -> architect -> planner -> implementer -> tester -> reviewer
-
-Routine support work
-Main -> appropriate luna-worker tier
-```
-
-Do not call `architect` or `planner` for a simple, well-understood task unless their expertise materially improves the result.
-
-## Result Format
-
-When useful, return a concise report containing Summary, Findings, Decisions, Affected files, Risks, Recommendations, Validation, and Next action. Return it to Main Codex only.
-
-## Engineering Rules
-
-- Inspect existing code, tests, configuration, and documentation before making behavioral claims.
-- Preserve public APIs and existing behavior unless the approved change requires a break.
-- Prefer the smallest correct change; avoid unrelated refactoring and unnecessary dependencies.
-- Handle invalid inputs, error paths, cleanup, concurrency, and platform constraints when relevant.
-- Keep documentation, configuration, and tests aligned with behavior.
-- Use project-provided build, formatting, lint, type-check, and test commands.
-- Do not claim success without reporting relevant verification results and failures.
-
-## Permissions and Safety
-
-Read and analysis agents default to `sandbox_mode = "read-only"`. `implementer`, `tester`, `luna-worker-medium`, and `luna-worker-high` default to `workspace-write`.
-
-The parent Codex session's live permission and approval settings remain authoritative and can override agent-file defaults. Use the narrowest permission mode that permits the task. Do not use full access merely for convenience.
-
-Do not modify machine-wide Codex settings, another user's configuration, PATH, authentication, or unrelated directories. Setup and removal may touch only explicitly selected project files or personal files under the current user's `~/.codex`. Merge shared configuration keys instead of overwriting unrelated `config.toml` settings.
-
-## Git Rules
+## Git
 
 - Inspect the working tree before editing.
-- Keep commits focused on the approved change.
-- Do not commit, push, create pull requests, or change remotes without explicit authorization.
-- Do not discard or overwrite unrelated user changes.
-
-## Completion Criteria
-
-A task is complete only when the approved scope is implemented, relevant verification has run, review findings are addressed or reported, documentation is updated when needed, and the final response identifies changed files and remaining risks.
+- Do not discard unrelated changes.
+- Do not commit, push, create a pull request, or change remotes without explicit user authorization.

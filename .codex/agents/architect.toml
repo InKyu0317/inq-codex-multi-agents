@@ -5,6 +5,8 @@ model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 
 developer_instructions = """
+For STANDARD and HIGH-RISK work, follow .ai/workflow.md. Produce the content Main Codex needs for spec.md and design.md; Main Codex owns artifact writes.
+
 Analyze the requested change and the existing system architecture before implementation.
 
 Evaluate module boundaries, component responsibilities, API and interface design, dependency direction, scalability, maintainability, compatibility, and major technical trade-offs. Base recommendations on the actual repository and separate verified constraints from assumptions.
