@@ -7,6 +7,7 @@ Codex native custom agents plus a small, documented development workflow. This r
 - Codex CLI 0.150.1 or later recommended
 - Git
 - Windows PowerShell or a POSIX shell
+- [OpenCodex](https://github.com/lidge-jun/opencodex) installed and configured separately, only if you plan to use the `claude` model profile or the manual Claude backup mode. It is not required for native OpenAI-only usage and is not installed by this repository's installer.
 
 ```powershell
 codex --version
@@ -27,15 +28,15 @@ Main Codex
 
 Main Codex is the only coordinator. Subagents do not spawn or directly communicate with other subagents. Write-capable agents with overlapping file scopes must not run concurrently.
 
-| Agent | Model / reasoning | Sandbox | Responsibility |
-|---|---|---|---|
-| `architect` | Terra / high | read-only | specification, design, boundaries, interfaces, risks |
-| `planner` | Terra / medium | read-only | sequence, files, task breakdown, validation, rollback |
-| `implementer` | Terra / high | workspace-write | approved implementation and related tests |
-| `tester` | Luna / medium | workspace-write | independent test, build, lint, type-check, regression |
-| `reviewer` | Terra / high | read-only | independent requirement, compatibility, security, and coverage review |
+| Agent | `openai` profile model / reasoning | `claude` profile model / reasoning | Sandbox | Responsibility |
+|---|---|---|---|---|
+| `architect` | Terra / high | Claude Sonnet 5 / high | read-only | specification, design, boundaries, interfaces, risks |
+| `planner` | Terra / medium | Claude Sonnet 5 / medium | read-only | sequence, files, task breakdown, validation, rollback |
+| `implementer` | Terra / high | Claude Sonnet 5 / high | workspace-write | approved implementation and related tests |
+| `tester` | Luna / medium | Claude Sonnet 5 / medium | workspace-write | independent test, build, lint, type-check, regression |
+| `reviewer` | Terra / high | Claude Sonnet 5 / high | read-only | independent requirement, compatibility, security, and coverage review |
 
-Main Codex uses `gpt-5.6-terra` with `high` reasoning. The unnamed-subagent default is `gpt-5.6-terra` with `medium` reasoning; normal work should use a named lifecycle agent.
+Both columns are only ever active together: Main and every lifecycle agent switch as one set using the profile switcher described below, never mixed. Under the `openai` profile, Main and the unnamed-subagent default use `gpt-5.6-terra` with `high`/`medium` reasoning respectively. Under the `claude` profile, Main and the unnamed-subagent default use `anthropic-apikey/claude-sonnet-5` with `high`/`medium` reasoning respectively; this requires OpenCodex to be installed and configured. Normal work should use a named lifecycle agent.
 
 ## Development workflow
 
