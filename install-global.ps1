@@ -19,10 +19,14 @@ $ErrorActionPreference = 'Stop'
 $sourceRoot = $PSScriptRoot
 $sourceAgentsFile = Join-Path $sourceRoot 'AGENTS.md'
 $sourceAgentsDirectory = Join-Path $sourceRoot '.codex\agents'
+$sourceProfilesDirectory = Join-Path $sourceRoot 'profiles'
+$sourceProfileSwitcher = Join-Path $sourceRoot 'switch-profile.ps1'
 $targetRoot = [IO.Path]::GetFullPath($TargetCodexHome)
 $targetAgentsFile = Join-Path $targetRoot 'AGENTS.md'
 $targetConfigFile = Join-Path $targetRoot 'config.toml'
 $targetAgentsDirectory = Join-Path $targetRoot 'agents'
+$targetProfilesDirectory = Join-Path $targetRoot 'profiles'
+$targetProfileSwitcher = Join-Path $targetRoot 'switch-profile.ps1'
 $backupRoot = Join-Path $targetRoot ('backups\inq-codex-multi-agents\' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 $utf8NoBom = New-Object Text.UTF8Encoding($false)
 $beginMarker = '<!-- BEGIN inq-codex-multi-agents -->'
@@ -227,10 +231,20 @@ if (-not (Test-Path -LiteralPath $sourceAgentsFile -PathType Leaf)) {
 if (-not (Test-Path -LiteralPath $sourceAgentsDirectory -PathType Container)) {
     throw "Source agents directory was not found: $sourceAgentsDirectory"
 }
+if (-not (Test-Path -LiteralPath $sourceProfilesDirectory -PathType Container)) {
+    throw "Source profiles directory was not found: $sourceProfilesDirectory"
+}
+if (-not (Test-Path -LiteralPath $sourceProfileSwitcher -PathType Leaf)) {
+    throw "Source profile switcher was not found: $sourceProfileSwitcher"
+}
 
 $sourceAgentFiles = @(Get-ChildItem -LiteralPath $sourceAgentsDirectory -Filter '*.toml' -File | Sort-Object Name)
 if ($sourceAgentFiles.Count -eq 0) {
     throw "No custom agent TOML files were found in: $sourceAgentsDirectory"
+}
+$sourceProfileFiles = @(Get-ChildItem -LiteralPath $sourceProfilesDirectory -Filter '*.json' -File | Sort-Object Name)
+if ($sourceProfileFiles.Count -eq 0) {
+    throw "No profile definitions were found in: $sourceProfilesDirectory"
 }
 
 $sourceGuidance = Read-TextFile -Path $sourceAgentsFile
@@ -285,6 +299,39 @@ foreach ($sourceAgent in $sourceAgentFiles) {
             Copy-Item -LiteralPath $sourceAgent.FullName -Destination $targetAgent -Force
             $changedFiles.Add($targetAgent)
         }
+    }
+}
+
+foreach ($sourceProfile in $sourceProfileFiles) {
+    $targetProfile = Join-Path $targetProfilesDirectory $sourceProfile.Name
+    $needsCopy = -not (Test-Path -LiteralPath $targetProfile -PathType Leaf)
+    if (-not $needsCopy) {
+        $needsCopy = (Get-FileHash -LiteralPath $sourceProfile.FullName -Algorithm SHA256).Hash -cne (Get-FileHash -LiteralPath $targetProfile -Algorithm SHA256).Hash
+    }
+
+    if ($needsCopy) {
+        $plannedFiles.Add($targetProfile)
+        if ($PSCmdlet.ShouldProcess($targetProfile, 'Install Codex model profile')) {
+            Backup-ExistingFile -Path $targetProfile -RelativePath (Join-Path 'profiles' $sourceProfile.Name)
+            if (-not (Test-Path -LiteralPath $targetProfilesDirectory -PathType Container)) {
+                New-Item -ItemType Directory -Path $targetProfilesDirectory -Force | Out-Null
+            }
+            Copy-Item -LiteralPath $sourceProfile.FullName -Destination $targetProfile -Force
+            $changedFiles.Add($targetProfile)
+        }
+    }
+}
+
+$switcherNeedsCopy = -not (Test-Path -LiteralPath $targetProfileSwitcher -PathType Leaf)
+if (-not $switcherNeedsCopy) {
+    $switcherNeedsCopy = (Get-FileHash -LiteralPath $sourceProfileSwitcher -Algorithm SHA256).Hash -cne (Get-FileHash -LiteralPath $targetProfileSwitcher -Algorithm SHA256).Hash
+}
+if ($switcherNeedsCopy) {
+    $plannedFiles.Add($targetProfileSwitcher)
+    if ($PSCmdlet.ShouldProcess($targetProfileSwitcher, 'Install Codex model profile switcher')) {
+        Backup-ExistingFile -Path $targetProfileSwitcher -RelativePath 'switch-profile.ps1'
+        Copy-Item -LiteralPath $sourceProfileSwitcher -Destination $targetProfileSwitcher -Force
+        $changedFiles.Add($targetProfileSwitcher)
     }
 }
 

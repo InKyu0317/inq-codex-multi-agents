@@ -84,13 +84,34 @@ After installing and configuring OpenCodex separately, use its documented manual
 
 ```powershell
 ocx start
-codex -m "anthropic/claude-sonnet-5"
+codex -m "anthropic-apikey/claude-sonnet-5"
 ocx stop
 ```
 
 Use an environment-variable reference such as `${ANTHROPIC_API_KEY}` in OpenCodex configuration. Never commit an API key, `.env` file, or OpenCodex configuration. Do not install an OpenCodex service, shim, quota monitor, or automatic failover for this backup workflow.
 
 Routed-model custom-agent compatibility must be smoke-tested in the installed Codex CLI and App before treating the backup as equivalent to native multi-agent execution. See the OpenCodex documentation for its current compatibility limitations.
+
+## Manual model profiles (Windows PowerShell)
+
+The Windows installer also installs two credential-free profiles and a manual switcher into the selected Codex home:
+
+```text
+~/.codex/
+├── profiles/openai.json
+├── profiles/claude.json
+└── switch-profile.ps1
+```
+
+`openai` restores Main, the unnamed-subagent default, and all lifecycle roles to the repository's Terra/Luna allocation. `claude` sets Main and every lifecycle role to `anthropic-apikey/claude-sonnet-5`. API keys remain in environment variables and are never stored in either profile.
+
+```powershell
+~/.codex/switch-profile.ps1 -Status
+~/.codex/switch-profile.ps1 -Profile claude
+~/.codex/switch-profile.ps1 -Profile openai
+```
+
+Each switch creates a backup under `~/.codex/backups/inq-codex-model-profiles/<timestamp>/`. It is a deliberate manual action: it does not monitor usage, automatically fail over providers, or alter running tasks. Start a new Codex session before creating agents with the selected profile.
 
 ## Installation
 
@@ -115,7 +136,7 @@ Options:
 - PowerShell: `-TargetCodexHome <path>`, `-MaxConcurrentThreads <1..64>`, `-WhatIf`
 - POSIX: `--target-codex-home PATH`, `--max-concurrent-threads N`, `--what-if`
 
-The installer manages only its `AGENTS.md` marker block, Main and `[agents]` settings, and the five lifecycle-agent TOML files. Replaced or retired files are backed up under `~/.codex/backups/inq-codex-multi-agents/<timestamp>/`. It does not install OpenCodex, change PATH, configure authentication, or modify Skills.
+The Windows installer manages only its `AGENTS.md` marker block, Main and `[agents]` settings, the five lifecycle-agent TOML files, and the credential-free profile switcher/definitions. Replaced or retired files are backed up under `~/.codex/backups/inq-codex-multi-agents/<timestamp>/`. It does not install OpenCodex, change PATH, configure authentication, or modify Skills.
 
 ## Validation
 

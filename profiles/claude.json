@@ -1,0 +1,18 @@
+{
+  "name": "claude",
+  "main": {
+    "model": "anthropic-apikey/claude-sonnet-5",
+    "reasoning_effort": "high"
+  },
+  "default_subagent": {
+    "model": "anthropic-apikey/claude-sonnet-5",
+    "reasoning_effort": "medium"
+  },
+  "roles": {
+    "architect": { "model": "anthropic-apikey/claude-sonnet-5", "reasoning_effort": "high" },
+    "planner": { "model": "anthropic-apikey/claude-sonnet-5", "reasoning_effort": "medium" },
+    "implementer": { "model": "anthropic-apikey/claude-sonnet-5", "reasoning_effort": "high" },
+    "tester": { "model": "anthropic-apikey/claude-sonnet-5", "reasoning_effort": "medium" },
+    "reviewer": { "model": "anthropic-apikey/claude-sonnet-5", "reasoning_effort": "high" }
+  }
+}
