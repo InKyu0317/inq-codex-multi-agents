@@ -8,6 +8,8 @@ Use [`.ai/workflow.md`](.ai/workflow.md) as the source of truth for the developm
 - `STANDARD` and `HIGH-RISK` work require `.ai/work/<work-slug>/` and its required artifacts.
 - For `HIGH-RISK` work, do not modify production source files until the user explicitly approves the completed `spec.md`, `design.md`, `plan.md`, and `tasks.md`.
 - Implement only approved work from `tasks.md`, and update its task status as work progresses.
+- Keep files and folders minimal; reuse before adding, delete unused scaffolding.
+- Track progress only in `.ai/log.md` — never create per-task or per-folder log files.
 
 ## Coordination
 

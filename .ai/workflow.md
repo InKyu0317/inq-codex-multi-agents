@@ -2,6 +2,14 @@
 
 This file is the development-process source of truth. Main Codex selects one path before source changes and creates all required artifacts under `.ai/work/<work-slug>/`.
 
+## File and folder discipline
+
+Keep the smallest working set of files and folders. Reuse an existing file, module, or helper before adding a new one. Do not create a new folder, module, or abstraction for something that fits in an existing file. Delete scaffolding that is no longer used instead of leaving it "for later".
+
+## Progress log
+
+Track ongoing progress in the single file [`.ai/log.md`](log.md), not in per-task or per-folder log files. Append a short dated one-line entry when a work package starts, changes path (for example FAST to STANDARD), or reaches Done. Do not create `log/`, per-agent logs, or a new log file per work package.
+
 ## Path selection
 
 Choose the least heavyweight path that is safe. Consider impact scope, reversibility, external-user impact, public API and data changes, security, architecture, cross-module coupling, requirements uncertainty, and regression risk—not only estimated effort.
@@ -69,3 +77,18 @@ Use a readable kebab-case slug, for example `.ai/work/device-manager/`.
 | `review.md` | spec/design compliance, tests, regressions, unresolved issues, debt, compatibility, security |
 
 Do not create `implementation.md`, `status.yaml`, a workflow engine, or a persistent task database. Git history, diffs, task status, and test evidence are the implementation record.
+
+## Log format
+
+Append one line per event to `.ai/log.md`, oldest first, newest at the bottom:
+
+```text
+YYYY-MM-DD  <work-slug>  <event>
+```
+
+Example:
+
+```text
+2026-09-07  model-profiles  STANDARD started
+2026-09-07  model-profiles  Done
+```
