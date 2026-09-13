@@ -37,6 +37,16 @@ Read-only agents provide artifact content to Main Codex; Main Codex records it u
 - Do not create a scheduler, daemon, queue, state database, workflow engine, automatic provider failover, or other orchestration framework.
 - Do not store API keys in the repository. Material-science expertise is supplied by separately installed personal Skills, not by this repository.
 
+## Code Review Graph
+
+Use `code-review-graph` only as a local code-navigation and change-review aid. Do not enable its daemon or watch mode.
+
+- Run `code-review-graph status` at the start of work. Build or update the graph only when it is missing or stale.
+- Keep `.code-review-graph/` in `.gitignore` and never commit it.
+- Use `explore-codebase` for specification and design, `debug-issue` for debugging, and `refactor-safely` before structural refactors.
+- After implementation, use `review-delta`; before completion or commit, use `review-changes`; use `review-pr` for pull requests.
+- Treat graph output as navigation evidence, not a replacement for reading relevant source, running tests, or following `.ai/workflow.md`.
+
 ## Git
 
 - Inspect the working tree before editing.
