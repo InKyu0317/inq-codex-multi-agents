@@ -22,6 +22,7 @@ Main Codex
   ├─ architect
   ├─ planner
   ├─ implementer
+  ├─ frontend-expert
   ├─ tester
   └─ reviewer
 ```
@@ -33,6 +34,7 @@ Main Codex is the only coordinator. Subagents do not spawn or directly communica
 | `architect` | Terra / high | Claude Sonnet 5 / high | read-only | specification, design, boundaries, interfaces, risks |
 | `planner` | Terra / medium | Claude Sonnet 5 / medium | read-only | sequence, files, task breakdown, validation, rollback |
 | `implementer` | Terra / high | Claude Sonnet 5 / high | workspace-write | approved implementation and related tests |
+| `frontend-expert` | Terra / medium | Claude Sonnet 5 / medium | workspace-write | consistent, accessible UI implementation using existing patterns and layout rules |
 | `tester` | Luna / medium | Claude Sonnet 5 / medium | workspace-write | independent test, build, lint, type-check, regression |
 | `reviewer` | Terra / high | Claude Sonnet 5 / high | read-only | independent requirement, compatibility, security, and coverage review |
 

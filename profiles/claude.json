@@ -12,6 +12,7 @@
     "architect": { "model": "anthropic-apikey/claude-sonnet-5", "reasoning_effort": "high" },
     "planner": { "model": "anthropic-apikey/claude-sonnet-5", "reasoning_effort": "medium" },
     "implementer": { "model": "anthropic-apikey/claude-sonnet-5", "reasoning_effort": "high" },
+    "frontend-expert": { "model": "anthropic-apikey/claude-sonnet-5", "reasoning_effort": "medium" },
     "tester": { "model": "anthropic-apikey/claude-sonnet-5", "reasoning_effort": "medium" },
     "reviewer": { "model": "anthropic-apikey/claude-sonnet-5", "reasoning_effort": "high" }
   }

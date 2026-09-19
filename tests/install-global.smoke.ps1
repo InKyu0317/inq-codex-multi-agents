@@ -34,7 +34,7 @@ max_concurrent_threads_per_session = 2
     Assert-Condition ($config -match 'default_subagent_model = "gpt-5.6-terra"') 'Default subagent model was not installed.'
     Assert-Condition ($config -match 'max_concurrent_threads_per_session = 3') 'Thread count was not merged.'
 
-    foreach ($agent in 'architect', 'planner', 'implementer', 'tester', 'reviewer') {
+    foreach ($agent in 'architect', 'planner', 'implementer', 'frontend-expert', 'tester', 'reviewer') {
         Assert-Condition (Test-Path -LiteralPath (Join-Path $agentRoot "$agent.toml") -PathType Leaf) "Missing lifecycle agent: $agent"
     }
     $switcher = Join-Path $testRoot 'switch-profile.ps1'
@@ -51,7 +51,7 @@ max_concurrent_threads_per_session = 2
     $config = Get-Content -Raw (Join-Path $testRoot 'config.toml')
     Assert-Condition ($config -match 'model = "anthropic-apikey/claude-sonnet-5"') 'Claude profile did not update Main.'
     Assert-Condition ($config -match 'default_subagent_model = "anthropic-apikey/claude-sonnet-5"') 'Claude profile did not update the default subagent.'
-    foreach ($agent in 'architect', 'planner', 'implementer', 'tester', 'reviewer') {
+    foreach ($agent in 'architect', 'planner', 'implementer', 'frontend-expert', 'tester', 'reviewer') {
         $agentConfig = Get-Content -Raw (Join-Path $agentRoot "$agent.toml")
         Assert-Condition ($agentConfig -match 'model = "anthropic-apikey/claude-sonnet-5"') "Claude profile did not update $agent."
     }
@@ -63,6 +63,8 @@ max_concurrent_threads_per_session = 2
     Assert-Condition ($config -match 'model = "gpt-5.6-terra"') 'OpenAI profile did not restore Main.'
     $testerConfig = Get-Content -Raw (Join-Path $agentRoot 'tester.toml')
     Assert-Condition ($testerConfig -match 'model = "gpt-5.6-luna"') 'OpenAI profile did not restore the tester model.'
+    $frontendConfig = Get-Content -Raw (Join-Path $agentRoot 'frontend-expert.toml')
+    Assert-Condition ($frontendConfig -match 'model = "gpt-5.6-terra"') 'OpenAI profile did not restore the frontend expert model.'
     Assert-Condition (Test-Path -LiteralPath (Join-Path $testRoot 'backups\inq-codex-model-profiles') -PathType Container) 'Expected profile-switch backup directory was not created.'
 
     & $installer -TargetCodexHome $testRoot -MaxConcurrentThreads 3

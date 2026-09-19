@@ -338,7 +338,6 @@ if ($switcherNeedsCopy) {
 foreach ($retiredAgentName in @(
     'advisor.toml',
     'researcher.toml',
-    'frontend-expert.toml',
     'python-expert.toml',
     'csharp-expert.toml',
     'rust-expert.toml',

@@ -18,7 +18,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$roles = @('architect', 'planner', 'implementer', 'tester', 'reviewer')
+$roles = @('architect', 'planner', 'implementer', 'frontend-expert', 'tester', 'reviewer')
 $utf8NoBom = New-Object Text.UTF8Encoding($false)
 $targetRoot = [IO.Path]::GetFullPath($TargetCodexHome)
 $profilesRoot = Join-Path $PSScriptRoot 'profiles'

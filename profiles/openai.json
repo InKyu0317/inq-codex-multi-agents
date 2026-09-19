@@ -12,6 +12,7 @@
     "architect": { "model": "gpt-5.6-terra", "reasoning_effort": "high" },
     "planner": { "model": "gpt-5.6-terra", "reasoning_effort": "medium" },
     "implementer": { "model": "gpt-5.6-terra", "reasoning_effort": "high" },
+    "frontend-expert": { "model": "gpt-5.6-terra", "reasoning_effort": "medium" },
     "tester": { "model": "gpt-5.6-luna", "reasoning_effort": "medium" },
     "reviewer": { "model": "gpt-5.6-terra", "reasoning_effort": "high" }
   }

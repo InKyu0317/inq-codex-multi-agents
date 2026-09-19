@@ -24,6 +24,7 @@ Do not run write-capable agents in parallel when their file scopes overlap. Keep
 - `architect` — read-only specification, design, boundaries, interfaces, risks, and compatibility.
 - `planner` — read-only implementation sequence, file scope, task breakdown, migration, rollback, and validation plan.
 - `implementer` — approved implementation and directly related tests.
+- `frontend-expert` — frontend implementation that reuses existing UI patterns and preserves visual consistency.
 - `tester` — independent tests, build, lint, type check, regression, and platform verification.
 - `reviewer` — read-only independent review against the request, artifacts, implementation, and tests.
 
